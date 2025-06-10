@@ -58,19 +58,11 @@ void sign_reception(int pid_server)
 
 int	main(int ac, char **av)
 {
+    int	pid_server;
 
-	int pid_client = getpid();
-	printf("pid server = %d\n", pid_client);
-	return (0);
-
-}
-/*	int	pid_server;
-	int pid_client;
-
-
-	pid_client = getpid();
 	pid_server = atoi(av[2]);
 	send_string(pid_server, av[3]);
     while(1)
         pause();
-    return (0);*/
+    return (0);
+}

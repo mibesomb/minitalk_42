@@ -10,13 +10,9 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <errno.h>
-#include <signal.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
+#include "minitalk.h"
 
-//variable globale, incremente au fur et a mesure des bits
+t_client	*confirmation;
 
 int	ft_strlen(char *string)
 {
@@ -27,6 +23,20 @@ int	ft_strlen(char *string)
 		i++;
 	return (i);
 }
+
+void	send_null(int pid, int signum)
+{
+	int	i;
+
+	i = 0;
+	while (i < 8)
+	{
+		kill(pid, signum);
+		usleep(90);
+		i++;
+	}
+}
+
 void	send_string(int pid, char *string)
 {
 	int	i;
@@ -44,25 +54,47 @@ void	send_string(int pid, char *string)
 				kill(pid, SIGUSR1);
 			else if (((string[j] >> i) & 1) == 0)
 				kill(pid, SIGUSR2);
-			usleep(100);
+			usleep(500);
 			i--;
 		}
 		j++;
 	}
-    printf("string sent !\n");
+	send_null(pid, SIGUSR2);
 }
-void sign_reception(int pid_server)
+
+void	handle_signal(int signum)
 {
-    //signal encoye au client pour confirmer message recu
+	if (signum == SIGUSR2)
+	{
+		confirmation->reception_signum = 1;
+		return;
+	}
 }
 
 int	main(int ac, char **av)
 {
-    int	pid_server;
+	int	pid_server;
 
-	pid_server = atoi(av[2]);
-	send_string(pid_server, av[3]);
-    while(1)
-        pause();
-    return (0);
+	if (ac != 3)
+		return (1);
+	printf("Taille de la chaîne : %d\n", ft_strlen(av[2]));
+	confirmation = malloc(sizeof(t_client));
+	if (!confirmation)
+		return (1);
+	confirmation->reception_signum = 0;
+
+	struct sigaction sa;
+    sa.sa_handler = handle_signal;
+    sa.sa_flags = 0;
+    sigemptyset(&sa.sa_mask);
+    sigaction(SIGUSR2, &sa, NULL);
+
+	pid_server = safe_atoi(av[1]);
+	send_string(pid_server, av[2]);
+
+	while (!confirmation->reception_signum)
+		pause();
+
+	free(confirmation);
+	return (0);
 }

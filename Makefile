@@ -16,11 +16,11 @@ NAME_2 = client
 CC = cc
 CFLAGS = -Wextra -Werror -Wall
 
-SRC_DIR = server.c client.c
+SRC_DIR = server_bonus.c client_bonus.c safe_atoi.c
 INLCUDE = minitalk.h
 
-SRC_1 = server.c
-SRC_2 = client.c
+SRC_1 = server_bonus.c
+SRC_2 = client_bonus.c safe_atoi.c
 OBJ_1 := $(SRC_1:.c=.o)
 OBJ_2 := $(SRC_2:.c=.o)
 
@@ -30,7 +30,7 @@ $(NAME_1): $(OBJ_1)
 		$(CC) $(CFLAGS) -o $@ $<
 
 $(NAME_2): $(OBJ_2)
-		$(CC) $(CFLAGS) -o $@ $<
+		$(CC) $(CFLAGS) -o $@ $(OBJ_2)
 
 %.o: %.c
 	$(CC) $(CFLAGS) -I. -c $< -o $@

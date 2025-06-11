@@ -10,26 +10,25 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <errno.h>
-#include <signal.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
+#include "minitalk.h"
 
-typedef struct s_global
+t_server	*data;
+
+void	clear_bit(void)
 {
-	int		bit_character[8];
-	int		index;
-}			t_global;
+	int	i;
 
-t_global	*data;
-
-void send_sign_back()
+	i = 0;
+	while (i < 8)
+	{
+		data->bit_character[i] = 0;
+		i++;
+	}
+}
+void	send_sign(void)
 {
-    int pid_client;
-
-    pid_client = getpid();
-    kill(pid_client, SIGUSR1);
+	if (data->client_pid > 0)
+		kill(data->client_pid, SIGUSR2);
 }
 
 void	print_character(int *bit_character)
@@ -39,22 +38,51 @@ void	print_character(int *bit_character)
 
 	i = 0;
 	c = 0;
-	data->index = 0;
 	while (i < 8)
 	{
 		if (bit_character[i] == 1)
 			c |= (1 << (7 - i));
 		i++;
 	}
-    if (c == '\0')
-    {
-		send_sign_back();
+	data->index = 0;
+	clear_bit();
+	usleep(90);
+	if (c == '\0')
+	{
+		send_sign();
+		data->end = 1;
+		return ;
 	}
 	write(1, &c, 1);
 }
-
-void	stocking_bit(int signum)
+int	multiple_clients(siginfo_t *info)
 {
+	pid_t	sender_pid;
+
+	sender_pid = info->si_pid;
+	if (data->client_pid && (info->si_pid != data->client_pid))
+		return (1);
+	if (data->client_pid == 0 || data->end)
+	{
+		data->client_pid = sender_pid;
+		data->index = 0;
+		clear_bit();
+		data->end = 0;
+		return (0);
+	}
+	if (sender_pid != data->client_pid)
+		return (1);
+	return (0);
+}
+
+void	signal_handling(int signum, siginfo_t *info, void *ucontext)
+{
+	int	check_client;
+
+	(void)ucontext;
+	check_client = multiple_clients(info);
+	if (check_client || data->end)
+		return ;
 	if (signum == SIGUSR1)
 		data->bit_character[data->index] = 1;
 	else if (signum == SIGUSR2)
@@ -66,17 +94,22 @@ void	stocking_bit(int signum)
 
 int	main(void)
 {
-	void *ptr;
+	struct sigaction	sa;
+	int					pid_server;
 
-    ptr = &stocking_bit;
-	data = malloc(sizeof(t_global));
+	data = malloc(sizeof(t_server));
 	if (!data)
 		return (1);
 	data->index = 0;
-	int pid_server = getpid();
-	printf("pid server = %d\n", pid_server);
-	signal(SIGUSR1, ptr);
-	signal(SIGUSR2, ptr);
+	data->end = 0;
+	data->client_pid = 0;
+	sigemptyset(&sa.sa_mask);
+	sa.sa_sigaction = signal_handling;
+	sa.sa_flags = SA_SIGINFO;
+	sigaction(SIGUSR1, &sa, NULL);
+	sigaction(SIGUSR2, &sa, NULL);
+	pid_server = getpid();
+	printf("%d\n", pid_server);
 	while (1)
 		pause();
 }

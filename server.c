@@ -127,7 +127,7 @@ int	main(int ac, char **av)
 	if (ac != 1)
 		return (1);
 	g_bit = 0;
-	sa.sa_handler = handle_signal;
+	sa.sa_sigaction = handle_signal;
 	sa.sa_flags = SA_SIGINFO;
 	sigemptyset(&sa.sa_mask);
 	sigaction(SIGUSR1, &sa, NULL);

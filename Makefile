@@ -20,14 +20,21 @@ SRC_DIR = server_bonus.c client_bonus.c safe_atoi.c
 INLCUDE = minitalk.h
 
 SRC_1 = server_bonus.c
-SRC_2 = client_bonus.c safe_atoi.c
+SRC_2 = client_bonus.c ft_atoi.c
+CFLAGS = -Wextra -Werror -Wall -g3
+
+SRC_DIR = server.c client.c realloc.c ft_atoi.c
+INLCUDE = minitalk.h
+
+SRC_1 = server.c ft_atoi.c
+SRC_2 = client.c ft_atoi.c
 OBJ_1 := $(SRC_1:.c=.o)
 OBJ_2 := $(SRC_2:.c=.o)
 
 all : $(NAME_1) $(NAME_2)
 
 $(NAME_1): $(OBJ_1)
-		$(CC) $(CFLAGS) -o $@ $<
+		$(CC) $(CFLAGS) -o $@ $(OBJ_1)
 
 $(NAME_2): $(OBJ_2)
 		$(CC) $(CFLAGS) -o $@ $(OBJ_2)

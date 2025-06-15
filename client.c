@@ -15,6 +15,30 @@
 
 static volatile sig_atomic_t g_confirmation = 0;
 
+void wait_for_confirmation(void)
+{
+	while (!g_confirmation)
+		pause();
+	g_confirmation = 0;
+}
+
+void send_bit(int pid, int bit)
+{
+	if (bit == 1)
+		kill(pid, SIGUSR1);
+	else
+		kill(pid, SIGUSR2);
+    usleep(100);
+	wait_for_confirmation();
+    usleep(50);
+}
+
+void handle_sig(int signum)
+{
+    if (signum == SIGUSR2)
+        g_confirmation = 1;
+}
+
 int	ft_strlen(char *string)
 {
 	int	i;
@@ -32,35 +56,9 @@ void	send_null(int pid)
 	i = 0;
 	while (i < 8)
 	{
-		kill(pid, SIGUSR2);
-		usleep(90);
+        send_bit(pid, 0);
 		i++;
 	}
-}
-
-void handle_signal(int signum)
-{
-	(void)signum;
-	g_confirmation = 1;
-    const char *msg = "Signal reçu\n";
-    write(1, msg, 12);
-
-}
-
-void wait_for_confirmation(void)
-{
-	while (!g_confirmation)
-		pause();
-	g_confirmation = 0;
-}
-
-void send_bit(int pid, int bit)
-{
-	if (bit == 1)
-		kill(pid, SIGUSR1);
-	else
-		kill(pid, SIGUSR2);
-	wait_for_confirmation();
 }
 
 void send_string(int pid, char *msg)
@@ -71,11 +69,11 @@ void send_string(int pid, char *msg)
 	j = 0;
 	while (msg[j])
 	{
-		i = 7;
-		while (i >= 0)
+		i = 0;
+		while (i < 8)
 		{
 			send_bit(pid, (msg[j] >> i) & 1);
-			i--;
+			i++;
 		}
 		j++;
 	}
@@ -86,11 +84,11 @@ void send_size(int pid, int size)
 {
 	int i;
 
-	i = 31;
-	while (i >= 0)
+	i = 0;
+	while (i < 32)
 	{
 		send_bit(pid, (size >> i) & 1);
-		i--;
+		i++;
 	}
 }
 
@@ -106,11 +104,10 @@ int main(int ac, char **av)
 	if (pid <= 0 || pid > 4194304)
 		return (1);
 
-	sa.sa_handler = handle_signal;
-	sa.sa_flags = 0;
+	sa.sa_handler = handle_sig;
+	sa.sa_flags = SA_SIGINFO;
 	sigemptyset(&sa.sa_mask);
-	sigaction(SIGUSR1, &sa, NULL);
-
+	sigaction(SIGUSR2, &sa, NULL);
 	size = ft_strlen(av[2]);
 	printf("siz of msg = %d\n", size);
 	if (!size)

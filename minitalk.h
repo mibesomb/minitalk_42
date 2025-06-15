@@ -33,11 +33,9 @@ void	send_string(int pid, char *string);
 
 //SERVER
 void	send_sign(void);
-int     multiple_clients(siginfo_t *info);
 
 //CLIENT
-void	send_null(int pid, int signum);
-void	handle_signal(int signum);
+void	send_null(int pid);
 
 /*FUNCTIONS : utils*/
 int safe_atoi(char *string);
@@ -48,7 +46,7 @@ int ft_atoi(char *string);
 
 // SERVER
 void		print_character(int *bit_character);
-void		signal_handling(int signum, siginfo_t *info, void *ucontext);
+void		handle_signal(int signum, siginfo_t *info, void *ucontext);
 void		chunck_init(char c);
 
 // CLIENT
@@ -59,11 +57,10 @@ void		send_string(int pid, char *string);
 
 // SERVER
 void		send_sign(void);
-int			multiple_clients(siginfo_t *info);
 
 // CLIENT
 void		send_null(int pid);
-void		handle_signal(int signum);
+void		handle_sig(int signum);
 
 /*FUNCTIONS : utils*/
 int			ft_atoi(char *string);

@@ -29,7 +29,7 @@ int	bit_to_int(int *bit_array, int round)
 	return (res);
 }
 
-void	bit_to_char(int *char_bits, int size)
+void	bit_to_char(int *char_bits, int *size)
 {
 	static char	*msg = NULL;
 	static int	char_index = 0;
@@ -37,41 +37,38 @@ void	bit_to_char(int *char_bits, int size)
 
 	if (!msg)
 	{
-		msg = malloc((size + 1) * sizeof(char));
+		msg = malloc((*size + 1) * sizeof(char));
 		if (!msg)
 			return ;
 	}
 	c = bit_to_int(char_bits, 8);
 	msg[char_index++] = c;
-	write(1, &c, 1);
-	write(1, " ", 1);
 	if (c == '\0')
 	{
-		write(1, "end of string\n", 15);
-	    msg[char_index - 1] = '\0';
-		print_message(msg, char_index);
+		print_message(msg, char_index - 1);
 		free(msg);
 		msg = NULL;
 		char_index = 0;
 		c = 0;
 	}
+	size = 0;
 }
 
 void	process_bit(void)
 {
 	static int	phase = 0;
-	static int	size = 0;
 	static int	bit_i = 0;
 	static int	size_bits[32];
 	static int	char_bits[8];
+	int	size;
 
 	if (!phase)
 	{
 		size_bits[bit_i++] = g_bit;
 		if (bit_i == 32)
 		{
-			size = bit_to_int(size_bits, 32);
 			bit_i = 0;
+			size = bit_to_int(size_bits, 32);
 			phase = 1;
 		}
 	}
@@ -80,8 +77,8 @@ void	process_bit(void)
 		char_bits[bit_i++] = g_bit;
 		if (bit_i == 8)
 		{
-			bit_to_char(char_bits, size);
 			bit_i = 0;
+			bit_to_char(char_bits, &size);
 		}
 	}
 }

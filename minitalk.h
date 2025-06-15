@@ -26,7 +26,7 @@ void	handle_signal(int signum, siginfo_t *info, void *ucontext);
 void	signal_back(pid_t pid);
 void	process_bit(void);
 int		bit_to_int(int *bit_array, int round);
-void	bit_to_char(int *char_bits, int size);
+void	bit_to_char(int *char_bits, int *size);
 void	print_message(char *msg, int size);
 
 // CLIENT

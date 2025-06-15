@@ -11,14 +11,13 @@
 /* ************************************************************************** */
 
 #include "minitalk.h"
-#include <stdio.h>
 
-static int g_bit;
+static int	g_bit;
 
-int bit_to_int(int *bit_array, int round)
+int	bit_to_int(int *bit_array, int round)
 {
-	int res;
-	int i;
+	int	res;
+	int	i;
 
 	res = 0;
 	i = 0;
@@ -30,16 +29,11 @@ int bit_to_int(int *bit_array, int round)
 	return (res);
 }
 
-void print_message(char *msg, int size)
+void	bit_to_char(int *char_bits, int size)
 {
-	write(1, msg, size);
-}
-
-void bit_to_char(int *char_bits, int size)
-{
-	static char 	*msg = NULL;
-	static int 		char_index = 0;
-	static char		c = 0;
+	static char	*msg = NULL;
+	static int	char_index = 0;
+	static char	c;
 
 	if (!msg)
 	{
@@ -49,23 +43,27 @@ void bit_to_char(int *char_bits, int size)
 	}
 	c = bit_to_int(char_bits, 8);
 	msg[char_index++] = c;
+	write(1, &c, 1);
+	write(1, " ", 1);
 	if (c == '\0')
 	{
-		print_message(msg, char_index - 1);
+		write(1, "end of string\n", 15);
+	    msg[char_index - 1] = '\0';
+		print_message(msg, char_index);
 		free(msg);
 		msg = NULL;
 		char_index = 0;
+		c = 0;
 	}
-	c = 0;
 }
 
-void process_bit(void)
+void	process_bit(void)
 {
-	static int phase = 0;
-	static int size = 0;
-	static int bit_i = 0;
-	static int size_bits[32];
-	static int char_bits[8];
+	static int	phase = 0;
+	static int	size = 0;
+	static int	bit_i = 0;
+	static int	size_bits[32];
+	static int	char_bits[8];
 
 	if (!phase)
 	{
@@ -73,13 +71,12 @@ void process_bit(void)
 		if (bit_i == 32)
 		{
 			size = bit_to_int(size_bits, 32);
-			printf("size = %d\n", size);
 			bit_i = 0;
 			phase = 1;
 		}
 	}
 	else
-	{	
+	{
 		char_bits[bit_i++] = g_bit;
 		if (bit_i == 8)
 		{
@@ -89,11 +86,6 @@ void process_bit(void)
 	}
 }
 
-void signal_back(pid_t pid)
-{
-	pid = (int)pid;
-	kill(pid, SIGUSR2);
-}
 void	handle_signal(int signum, siginfo_t *info, void *ucontext)
 {
 	(void)ucontext;
@@ -106,7 +98,10 @@ void	handle_signal(int signum, siginfo_t *info, void *ucontext)
 
 int	main(int ac, char **av)
 {
-	struct sigaction sa;
+	struct sigaction	sa;
+	pid_t					pid_server;
+	char *pid_str;
+
 	(void)av;
 	if (ac != 1)
 		return (1);
@@ -116,7 +111,10 @@ int	main(int ac, char **av)
 	sigemptyset(&sa.sa_mask);
 	sigaction(SIGUSR1, &sa, NULL);
 	sigaction(SIGUSR2, &sa, NULL);
-	printf("%d\n", getpid());
+	pid_server = getpid();
+	pid_str = ft_itoa(pid_server);
+	write(1, pid_str, ft_strlen(pid_str));
+	write(1, "\n", 1);
 	while (1)
 	{
 		pause();

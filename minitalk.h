@@ -16,53 +16,30 @@
 /*   LIBRARIES   */
 # include <signal.h>
 # include <stdlib.h>
-# include <unistd.h>
 # include <string.h>
+# include <unistd.h>
 
 /*   FUNCTIONS   */
 
-//SERVER
-void	print_character(int *bit_character);
-void	signal_handling(int signum, siginfo_t *info, void *ucontext);
+// SERVER
+void	handle_signal(int signum, siginfo_t *info, void *ucontext);
+void	signal_back(pid_t pid);
+void	process_bit(void);
+int		bit_to_int(int *bit_array, int round);
+void	bit_to_char(int *char_bits, int size);
+void	print_message(char *msg, int size);
 
-//CLIENT
-int	ft_strlen(char *string);
-void	send_string(int pid, char *string);
-
-/*   FUNCTIONS : BONUS  */
-
-//SERVER
-void	send_sign(void);
-
-//CLIENT
+// CLIENT
+void	handle_sig(int signum);
+void	send_bit(int pid, int bit);
+void	send_size(int pid, int size);
+void	send_string(int pid, char *msg);
 void	send_null(int pid);
+void	wait_for_confirmation(void);
 
 /*FUNCTIONS : utils*/
-int safe_atoi(char *string);
-int ft_nb_digits(int nb);
-int ft_atoi(char *string);
-
-/*   FUNCTIONS   */
-
-// SERVER
-void		print_character(int *bit_character);
-void		handle_signal(int signum, siginfo_t *info, void *ucontext);
-void		chunck_init(char c);
-
-// CLIENT
-int			ft_strlen(char *string);
-void		send_string(int pid, char *string);
-
-/*   FUNCTIONS : BONUS  */
-
-// SERVER
-void		send_sign(void);
-
-// CLIENT
-void		send_null(int pid);
-void		handle_sig(int signum);
-
-/*FUNCTIONS : utils*/
-int			ft_atoi(char *string);
+int		ft_strlen(char *string);
+int		ft_atoi(char *string);
+char	*ft_itoa(int n);
 
 #endif

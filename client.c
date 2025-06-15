@@ -11,105 +11,49 @@
 /* ************************************************************************** */
 
 #include "minitalk.h"
-#include <stdio.h>
 
-static volatile sig_atomic_t g_confirmation = 0;
+static volatile sig_atomic_t	g_confirmation = 0;
 
-void wait_for_confirmation(void)
+void	wait_for_confirmation(void)
 {
 	while (!g_confirmation)
 		pause();
 	g_confirmation = 0;
 }
 
-void send_bit(int pid, int bit)
+void	send_bit(int pid, int bit)
 {
 	if (bit == 1)
 		kill(pid, SIGUSR1);
 	else
 		kill(pid, SIGUSR2);
-    usleep(100);
+	usleep(100);
 	wait_for_confirmation();
-    usleep(50);
+	usleep(50);
 }
 
-void handle_sig(int signum)
+void	handle_sig(int signum)
 {
-    if (signum == SIGUSR2)
-        g_confirmation = 1;
+	if (signum == SIGUSR2)
+		g_confirmation = 1;
 }
 
-int	ft_strlen(char *string)
+int	main(int ac, char **av)
 {
-	int	i;
-
-	i = 0;
-	while (string[i])
-		i++;
-	return (i);
-}
-
-void	send_null(int pid)
-{
-	int	i;
-
-	i = 0;
-	while (i < 8)
-	{
-        send_bit(pid, 0);
-		i++;
-	}
-}
-
-void send_string(int pid, char *msg)
-{
-	int	i;
-	int	j;
-
-	j = 0;
-	while (msg[j])
-	{
-		i = 0;
-		while (i < 8)
-		{
-			send_bit(pid, (msg[j] >> i) & 1);
-			i++;
-		}
-		j++;
-	}
-	send_null(pid);
-}
-
-void send_size(int pid, int size)
-{
-	int i;
-
-	i = 0;
-	while (i < 32)
-	{
-		send_bit(pid, (size >> i) & 1);
-		i++;
-	}
-}
-
-int main(int ac, char **av)
-{
-	int pid;
-	struct sigaction sa;
-	int size;
+	int					pid;
+	struct sigaction	sa;
+	int					size;
 
 	if (ac != 3)
 		return (1);
 	pid = ft_atoi(av[1]);
 	if (pid <= 0 || pid > 4194304)
 		return (1);
-
 	sa.sa_handler = handle_sig;
 	sa.sa_flags = SA_SIGINFO;
 	sigemptyset(&sa.sa_mask);
 	sigaction(SIGUSR2, &sa, NULL);
 	size = ft_strlen(av[2]);
-	printf("siz of msg = %d\n", size);
 	if (!size)
 		return (1);
 	send_size(pid, size);

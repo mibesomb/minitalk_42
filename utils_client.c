@@ -1,39 +1,56 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   server.c                                           :+:      :+:    :+:   */
+/*   utils_client.c                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: mibesomb <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/06/10 12:57:46 by mibesomb          #+#    #+#             */
-/*   Updated: 2025/06/10 12:57:49 by mibesomb         ###   ########.fr       */
+/*   Created: 2025/06/15 21:15:25 by mibesomb          #+#    #+#             */
+/*   Updated: 2025/06/15 21:15:27 by mibesomb         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minitalk.h"
 
-int	ft_atoi(char *string)
+void	send_null(int pid)
 {
 	int	i;
-	int	sign;
-	int	result;
 
 	i = 0;
-	sign = 1;
-	result = 0;
-	while (string[i] == 32 || string[i] == '\n' || string[i] == '\t'
-		|| string[i] == '\v' || string[i] == '\r' || string[i] == '\f')
-		i++;
-	if (string[i] == '-' || string[i] == '+')
+	while (i < 8)
 	{
-		if (string[i] == '-')
-			sign = -1;
+		send_bit(pid, 0);
 		i++;
 	}
-	while (string[i] && (string[i] >= '0' && string[i] <= '9'))
+}
+
+void	send_string(int pid, char *msg)
+{
+	int	i;
+	int	j;
+
+	j = 0;
+	while (msg[j])
 	{
-		result = (result * 10) + (string[i] - 48);
+		i = 0;
+		while (i < 8)
+		{
+			send_bit(pid, (msg[j] >> i) & 1);
+			i++;
+		}
+		j++;
+	}
+	send_null(pid);
+}
+
+void	send_size(int pid, int size)
+{
+	int	i;
+
+	i = 0;
+	while (i < 32)
+	{
+		send_bit(pid, (size >> i) & 1);
 		i++;
 	}
-	return (result * sign);
 }

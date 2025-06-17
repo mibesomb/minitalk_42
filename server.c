@@ -12,110 +12,91 @@
 
 #include "minitalk.h"
 
-static int	g_bit;
-
-int	bit_to_int(int *bit_array, int round)
+void	stock_msg(unsigned char c, int size, int pid)
 {
-	int	res;
-	int	i;
-
-	res = 0;
-	i = 0;
-	while (i < round)
-	{
-		res |= (bit_array[i] << i);
-		i++;
-	}
-	return (res);
-}
-
-void	bit_to_char(int *char_bits, int *size)
-{
+	static int	index = 0;
 	static char	*msg = NULL;
-	static int	char_index = 0;
-	static char	c;
 
 	if (!msg)
-	{
-		msg = malloc((*size + 1) * sizeof(char));
-		if (!msg)
-			return ;
-	}
-	c = bit_to_int(char_bits, 8);
-	msg[char_index++] = c;
+		msg = malloc(size + 1 * sizeof(char));
+	if (!msg)
+		return ;
+	msg[index++] = c;
 	if (c == '\0')
 	{
-		print_message(msg, char_index - 1);
+		print_message(msg, index - 1);
 		free(msg);
 		msg = NULL;
-		char_index = 0;
-		c = 0;
+		index = 0;
+		kill(pid, SIGUSR2);
 	}
-	size = 0;
 }
 
-void	process_bit(void)
+int	bit_to_char(int signum, int pid, int size)
 {
-	static int	phase = 0;
-	static int	bit_i = 0;
-	static int	size_bits[32];
-	static int	char_bits[8];
-	int	size;
+	static int				bit = 0;
+	static unsigned char	c = 0;
 
-	if (!phase)
+	c = (c << 1) | (signum == SIGUSR1);
+	kill(pid, SIGUSR2);
+	bit++;
+	if (bit == 8)
 	{
-		size_bits[bit_i++] = g_bit;
-		if (bit_i == 32)
-		{
-			bit_i = 0;
-			size = bit_to_int(size_bits, 32);
-			phase = 1;
-		}
+		stock_msg(c, size, pid);
+		bit = 0;
+		if (c == '\0')
+			return (0);
+		c = 0;
 	}
-	else
-	{
-		char_bits[bit_i++] = g_bit;
-		if (bit_i == 8)
-		{
-			bit_i = 0;
-			bit_to_char(char_bits, &size);
-		}
-	}
+	return (1);
 }
 
 void	handle_signal(int signum, siginfo_t *info, void *ucontext)
 {
+	static int		bit = 0;
+	static uint32_t	size = 0;
+	static int		phase = 0;
+
 	(void)ucontext;
-	if (signum == SIGUSR1)
-		g_bit = 1;
-	else if (signum == SIGUSR2)
-		g_bit = 0;
-	signal_back(info->si_pid);
+	if (!phase)
+	{
+		size = (size << 1) | (signum == SIGUSR1);
+		bit++;
+		kill(info->si_pid, SIGUSR2);
+		if (bit == 32)
+		{
+			phase = 1;
+			bit = 0;
+		}
+		return ;
+	}
+	if (!bit_to_char(signum, info->si_pid, size))
+	{
+		phase = 0;
+		bit = 0;
+		size = 0;
+	}
 }
 
 int	main(int ac, char **av)
 {
 	struct sigaction	sa;
-	pid_t					pid_server;
-	char *pid_str;
+	int pid;
+	char *pid_server;
 
 	(void)av;
 	if (ac != 1)
 		return (1);
-	g_bit = 0;
 	sa.sa_sigaction = handle_signal;
 	sa.sa_flags = SA_SIGINFO;
 	sigemptyset(&sa.sa_mask);
 	sigaction(SIGUSR1, &sa, NULL);
 	sigaction(SIGUSR2, &sa, NULL);
-	pid_server = getpid();
-	pid_str = ft_itoa(pid_server);
-	write(1, pid_str, ft_strlen(pid_str));
+	pid = getpid();
+	pid_server = ft_itoa(pid);
+	write(1, pid_server, ft_strlen(pid_server));
 	write(1, "\n", 1);
 	while (1)
-	{
 		pause();
-		process_bit();
-	}
 	return (0);
 }

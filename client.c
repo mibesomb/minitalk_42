@@ -54,8 +54,6 @@ int	main(int ac, char **av)
 	sigemptyset(&sa.sa_mask);
 	sigaction(SIGUSR2, &sa, NULL);
 	size = ft_strlen(av[2]);
-	if (!size)
-		return (1);
 	send_size(pid, size);
 	send_string(pid, av[2]);
 	return (0);

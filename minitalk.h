@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   server.c                                           :+:      :+:    :+:   */
+/*   minitalk.h                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: mibesomb <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/06/10 12:57:46 by mibesomb          #+#    #+#             */
-/*   Updated: 2025/06/10 12:57:49 by mibesomb         ###   ########.fr       */
+/*   Created: 2025/06/16 20:19:47 by mibesomb          #+#    #+#             */
+/*   Updated: 2025/06/16 20:19:49 by mibesomb         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 
 /*   LIBRARIES   */
 # include <signal.h>
+# include <stdint.h>
 # include <stdlib.h>
 # include <string.h>
 # include <unistd.h>
@@ -26,7 +27,7 @@ void	handle_signal(int signum, siginfo_t *info, void *ucontext);
 void	signal_back(pid_t pid);
 void	process_bit(void);
 int		bit_to_int(int *bit_array, int round);
-void	bit_to_char(int *char_bits, int *size);
+int		bit_to_char(int signum, int pid, int size);
 void	print_message(char *msg, int size);
 
 // CLIENT

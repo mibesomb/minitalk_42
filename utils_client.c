@@ -5,8 +5,8 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: mibesomb <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/06/15 21:15:25 by mibesomb          #+#    #+#             */
-/*   Updated: 2025/06/15 21:15:27 by mibesomb         ###   ########.fr       */
+/*   Created: 2025/06/16 20:20:25 by mibesomb          #+#    #+#             */
+/*   Updated: 2025/06/16 20:20:27 by mibesomb         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,11 +32,11 @@ void	send_string(int pid, char *msg)
 	j = 0;
 	while (msg[j])
 	{
-		i = 0;
-		while (i < 8)
+		i = 7;
+		while (i >= 0)
 		{
 			send_bit(pid, (msg[j] >> i) & 1);
-			i++;
+			i--;
 		}
 		j++;
 	}
@@ -47,10 +47,10 @@ void	send_size(int pid, int size)
 {
 	int	i;
 
-	i = 0;
-	while (i < 32)
+	i = 31;
+	while (i >= 0)
 	{
 		send_bit(pid, (size >> i) & 1);
-		i++;
+		i--;
 	}
 }
